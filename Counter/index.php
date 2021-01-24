@@ -57,17 +57,22 @@
 </head>
 <body>
 	<br/>
-	<button id="start" onclick="start_counter()">Start Counter</button>
+	<!--<button id="start" onclick="start_counter()">Start Counter</button>
 	
 	<button id="end" onclick="stop_counter()">Stop Counter</button>
 	<br/>
-	<br/>
-	<!--<label> Start Time:
-	<input type="time" name="st_time" >-->
-	<!--</label>
+	<br/>-->
+	<form>
+	<label> Start Time:
+	<input type="time" id="start_time" name="st_time" onchange="check_st('start_time')">
+	</label>
 	<label> End Time:
-	<input type="time" name="end_time" >
-	</label>-->
+	<input type="time" id="end_time" name="end_time" disabled onchange="check_end(event)">
+	</label>
+	<br/>
+	<br/>
+	<button id="start" type="button">Submit</button>
+	<form>
 	<br/>
 	<h1 id="count"></h1>
 	
@@ -80,6 +85,11 @@ let final_mili;
 let difference;
 let interval;
 let push_db_str;
+let set_time_mili =0;
+let end_time_mili =0;
+let current_time;
+let start_value;
+let end_time;
 function resent(){
 		$.get("get_time.php",function(data, status){
 			console.log("Status: " + status,data);
@@ -93,7 +103,7 @@ function resent(){
 			pushIntoDb(msToTime(difference))
 		});
 	}
-$("document").ready(resent());
+
 	
 	
 	function msToTime(duration) {
@@ -119,6 +129,13 @@ $("document").ready(resent());
 		pushIntoDb(push_db_str);
 	}
 	
+	$('#start').click(function(){
+		check_st('start_time');
+		if(set_time_mili!=0 && end_time_mili!=0){
+			pushCounterTime(start_value,end_value);
+		}
+	});
+	
 	function start_counter(){
 		resent();
 		interval = setInterval(counter, 1000);
@@ -134,5 +151,45 @@ $("document").ready(resent());
 		 });
 	}
 	
+	function check_st(id){
+		 start_value = $("#"+id).val();
+		$.get("get_time.php",function(data, status){
+			current_time = new Date(data);
+			set_time_mili = new Date(current_time.toLocaleDateString()+" "+start_value).getTime();
+			let current_time_mili = current_time.getTime();
+			if(current_time_mili<set_time_mili){
+				$("#end_time").attr("min",start_value);
+				$("#end_time").removeAttr("disabled");
+				$("#end_time").attr("value", new Date(set_time_mili+60000).toTimeString().slice(0,5));
+			}
+			else{
+				alert("Please Choose Starting time Greater than "+ current_time.toLocaleTimeString()+" and Lesser than 12:00:00 AM");
+				$("#start_time").val("");
+				$("#end_time").attr("value","");
+				$("#end_time").attr("disabled","disable");
+				set_time_mili =0;
+				start_value="";
+			}
+		});
+	}
+	
+	function check_end(event){
+		end_value = event.target.value;
+		end_time_mili = new Date(current_time.toLocaleDateString()+" "+end_value).getTime();
+		if(set_time_mili<end_time_mili){
+			
+		}
+		else{
+			alert("Please Choose Starting time Greater than Set Time");
+			event.preventDefault();
+			$("#end_time").val(new Date(set_time_mili+60000).toTimeString().slice(0,5));
+			end_time_mili=0;
+			end_value="";
+		}
+	}
+	
+	function pushCounterTime(start_value,end_value){
+		//To be Updated
+	}
 </script>
 </html>
