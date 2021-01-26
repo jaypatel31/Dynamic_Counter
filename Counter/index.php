@@ -97,14 +97,43 @@ let start_value;
 let end_time;
 let server_start_time;
 let server_end_time;
+let Ct_time;
+let tmp;
 function time_checker(){
 	$.get("get_counter_time.php",function(data, status){
 		data =JSON.parse(data);
 		server_start_time = data.start_time;
 		server_end_time = data.end_time;
-		resent(server_start_time,server_end_time);
+		intial_hr = new Date(current_time.toLocaleDateString()+" "+server_start_time);
+		final_hr = new Date(current_time.toLocaleDateString()+" "+server_end_time);
+		intial_mili = intial_hr.getTime();
+		final_mili = final_hr.getTime();
+		tmp = intial_mili;
+		if(current_time.getTime()>final_mili){
+			
+		}
+		else{
+			//alert("Succesfully Set The Duration");
+			$("#user_info").text("Timer Will Start From "+server_start_time+" To "+server_end_time);
+			$('form').hide();
+			$('#start').hide();
+			$('#reset').show();
+			if(current_time.getTime()>intial_mili){
+				intial_mili = current_time.getTime()+1000;
+				difference = final_mili-intial_mili;
+				document.getElementById("count").innerHTML = msToTime(difference);
+				interval = setInterval(counter, 1000);
+			}
+			else{
+				resent();
+			}
+		}
+		
 	});
 }
+$("document").ready(function(){
+	time_checker();
+});
 
 function current_time_getter(){
 	$.get("get_time.php",function(data, status){
@@ -112,11 +141,7 @@ function current_time_getter(){
 	});
 }
 current_time_getter();
-function resent(server_start_time,server_end_time){
-			intial_hr = new Date(current_time.toLocaleDateString()+" "+server_start_time);
-			final_hr = new Date(current_time.toLocaleDateString()+" "+server_end_time);
-			intial_mili = intial_hr.getTime();
-			final_mili = final_hr.getTime();
+function resent(){		
 			difference = 0;
 			difference = final_mili-intial_mili;
 			document.getElementById("count").innerHTML = msToTime(difference);
